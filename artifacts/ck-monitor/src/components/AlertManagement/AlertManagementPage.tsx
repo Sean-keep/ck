@@ -50,7 +50,7 @@ function groupAlerts(alerts: Alert[]): AlertGroup[] {
 }
 
 export default function AlertManagementPage() {
-  const { alerts, setAlerts, resolutionMethods, rules, settings } = useApp();
+  const { alerts, updateAlert, addAlerts, resolutionMethods, rules, settings } = useApp();
   const { canWrite } = useAuth();
 
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
@@ -83,26 +83,24 @@ export default function AlertManagementPage() {
   const handleDetectAlerts = async () => {
     setIsDetecting(true);
     await new Promise(r => setTimeout(r, 1500));
-    setAlerts([...generateMockAlerts(Math.floor(Math.random() * 5) + 2), ...alerts]);
+    const newAlerts = generateMockAlerts(Math.floor(Math.random() * 5) + 2);
+    await addAlerts(newAlerts);
     setIsDetecting(false);
   };
 
-  const handleAlertAction = (alertId: string, action: 'acknowledged' | 'resolved' | 'suppressed', methodId?: string) => {
-    const updated = alerts.map(a =>
-      a.id !== alertId ? a : {
-        ...a, status: action,
-        resolved_at: action === 'resolved' ? new Date().toISOString() : a.resolved_at,
-        resolution_method_id: methodId || a.resolution_method_id,
-      }
-    );
-    setAlerts(updated);
-    if (selectedAlert?.id === alertId) setSelectedAlert(updated.find(a => a.id === alertId) || null);
+  const handleAlertAction = async (alertId: string, action: 'acknowledged' | 'resolved' | 'suppressed', methodId?: string) => {
+    const patch = {
+      status: action,
+      resolved_at: action === 'resolved' ? new Date().toISOString() : undefined,
+      ...(methodId ? { resolution_method_id: methodId } : {}),
+    };
+    await updateAlert(alertId, patch);
+    if (selectedAlert?.id === alertId) setSelectedAlert(prev => prev ? { ...prev, ...patch } : null);
   };
 
-  const handleUpdateSuggestion = (alertId: string, suggestion: string) => {
-    const updated = alerts.map(a => a.id === alertId ? { ...a, resolution_suggestion: suggestion } : a);
-    setAlerts(updated);
-    if (selectedAlert?.id === alertId) setSelectedAlert({ ...selectedAlert, resolution_suggestion: suggestion });
+  const handleUpdateSuggestion = async (alertId: string, suggestion: string) => {
+    await updateAlert(alertId, { resolution_suggestion: suggestion });
+    if (selectedAlert?.id === alertId) setSelectedAlert(prev => prev ? { ...prev, resolution_suggestion: suggestion } : null);
   };
 
   const getRecommendedMethod = (alert: Alert): ResolutionMethod | null => {

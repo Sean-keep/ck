@@ -15,9 +15,7 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    const success = login(username, password);
+    const success = await login(username, password);
     if (!success) {
       setError('用户名或密码错误，请重试');
     }

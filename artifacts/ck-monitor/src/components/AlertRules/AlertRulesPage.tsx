@@ -34,12 +34,13 @@ const defaultForm: Omit<AlertRule, 'id' | 'created_at' | 'updated_at'> = {
 };
 
 export default function AlertRulesPage() {
-  const { rules, setRules, resolutionMethods } = useApp();
+  const { rules, createRule, updateRule, deleteRule, resolutionMethods } = useApp();
   const { canWrite } = useAuth();
 
   const [showModal, setShowModal] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [ruleForm, setRuleForm] = useState(defaultForm);
+  const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -78,27 +79,35 @@ export default function AlertRulesPage() {
     return sortDir === 'asc' ? <ChevronUp className="w-3 h-3 text-blue-500" /> : <ChevronDown className="w-3 h-3 text-blue-500" />;
   };
 
-  const handleSaveRule = () => {
+  const handleSaveRule = async () => {
     if (!ruleForm.name || !ruleForm.table_name || !ruleForm.group_by_field) {
       alert('请填写规则名称、数据表和分组字段');
       return;
     }
-    if (editingRule) {
-      setRules(rules.map(r => r.id === editingRule.id ? { ...r, ...ruleForm, updated_at: new Date().toISOString() } : r));
-    } else {
-      setRules([...rules, { ...ruleForm, id: `rule-${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }]);
+    setSaving(true);
+    try {
+      if (editingRule) {
+        await updateRule(editingRule.id, ruleForm);
+      } else {
+        await createRule(ruleForm);
+      }
+      setShowModal(false);
+      setEditingRule(null);
+      setRuleForm(defaultForm);
+    } catch (e: any) {
+      alert(e.message || '保存失败');
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
-    setEditingRule(null);
-    setRuleForm(defaultForm);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('确定删除该规则吗？')) setRules(rules.filter(r => r.id !== id));
+  const handleDelete = async (id: string) => {
+    if (confirm('确定删除该规则吗？')) await deleteRule(id);
   };
 
-  const handleToggle = (id: string) => {
-    setRules(rules.map(r => r.id === id ? { ...r, enabled: !r.enabled, updated_at: new Date().toISOString() } : r));
+  const handleToggle = async (id: string) => {
+    const rule = rules.find(r => r.id === id);
+    if (rule) await updateRule(id, { enabled: !rule.enabled });
   };
 
   const openEdit = (rule: AlertRule) => {
@@ -393,8 +402,8 @@ export default function AlertRulesPage() {
 
             <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3 rounded-b-xl">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition">取消</button>
-              <button onClick={handleSaveRule} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition">
-                {editingRule ? '保存更改' : '创建规则'}
+              <button onClick={handleSaveRule} disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-60">
+                {saving ? '保存中...' : editingRule ? '保存更改' : '创建规则'}
               </button>
             </div>
           </div>
