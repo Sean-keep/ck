@@ -32,22 +32,6 @@ sudo apt install -y postgresql postgresql-contrib
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
-#安装 Node.js 24（推荐用 nvm）
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-nvm install 24
-nvm use 24
-
-#安装 pnpm
-npm install -g pnpm
-
-#安装 PostgreSQL
-sudo apt update
-sudo apt install -y postgresql postgresql-contrib
-
-#启动并检查 PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
 # 2. 创建数据库
 sudo -u postgres psql
 
