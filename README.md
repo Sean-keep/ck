@@ -136,25 +136,24 @@ cd ck-main/artifacts/ck-monitor
 pm2 start npx --name ck-frontend -- vite preview --host
 
 # 8. Nginx 反向代理（可选）
+
 server {
     listen 80;
     server_name your-domain.com;
-
-    #API 服务 -> :5000
     location /api/ {
         proxy_pass http://127.0.0.1:5000/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_http_version 1.1;
     }
-
-    #前端静态文件 -> :4173 (vite preview)
     location / {
         proxy_pass http://127.0.0.1:4173;
         proxy_http_version 1.1;
     }
+}
 
 # 9. 添加开机自启
+
 pm2 save
 
 pm2 startup
