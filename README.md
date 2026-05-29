@@ -127,8 +127,8 @@ server {
         proxy_pass http://127.0.0.1:4173;
         proxy_http_version 1.1;
     }
-}
 
 # 9. 添加开机自启
 pm2 save
+
 pm2 startup
