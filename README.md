@@ -6,52 +6,77 @@
 <img width="762" height="758" alt="image" src="https://github.com/user-attachments/assets/57af256d-2ea4-459c-b1c0-8249dbdb0405" />
 
 项目概览
+
 ClickHouse Monitor — 一个 ClickHouse 数据库监控告警系统
 
 技术栈：
-Monorepo：pnpm workspaces
-后端：Express 5 + PostgreSQL + Drizzle ORM + Zod 校验
-前端：React 19 + Vite + TailwindCSS v4 + Recharts + Radix UI
-运行时：Node.js 24
+
+Monorepo：
+pnpm workspaces
+后端：
+Express 5 + PostgreSQL + Drizzle ORM + Zod 校验
+前端：
+React 19 + Vite + TailwindCSS v4 + Recharts + Radix UI
+运行时：
+Node.js 24
 
 # Ubuntu 部署步骤
 # 1. 环境准备
 #安装 Node.js 24（推荐用 nvm）
+
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+
 nvm install 24
+
 nvm use 24
 
 #安装 pnpm
+
 npm install -g pnpm
 
 #安装 PostgreSQL
+
 sudo apt update
+
 sudo apt install -y postgresql postgresql-contrib
 
 #启动并检查 PostgreSQL
+
 sudo systemctl start postgresql
+
 sudo systemctl enable postgresql
 
 # 2. 创建数据库
+
 sudo -u postgres psql
 
 #在 psql 中执行：
+
 CREATE DATABASE ck_monitor;
+
 CREATE USER ck_user WITH PASSWORD 'your_password';
+
 GRANT ALL PRIVILEGES ON DATABASE ck_monitor TO ck_user;
+
 sudo -u postgres psql
 
 # 3. 上传代码并安装依赖
+
 #在你的 Ubuntu 服务器上
 #如果用 git
+
 git clone <your-repo-url> ck-main
+
 cd ck-main
 
 #或手动上传 zip
+
 unzip ck-main.zip
+
 cd ck-main
 
 #安装依赖
+
 pnpm install
 
 #首次安装需要等待 pnpm 下载所有 catalog 包
