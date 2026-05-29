@@ -7,7 +7,21 @@
 
 Ubuntu 部署步骤
 1. 环境准备
-bash
+# 安装 Node.js 24（推荐用 nvm）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+nvm install 24
+nvm use 24
+
+# 安装 pnpm
+npm install -g pnpm
+
+# 安装 PostgreSQL
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+# 启动并检查 PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
 
 复制
 # 安装 Node.js 24（推荐用 nvm）
@@ -25,21 +39,17 @@ sudo apt install -y postgresql postgresql-contrib
 # 启动并检查 PostgreSQL
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
-2. 创建数据库
-bash
 
-复制
+2. 创建数据库
 sudo -u postgres psql
 
 # 在 psql 中执行：
 CREATE DATABASE ck_monitor;
 CREATE USER ck_user WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE ck_monitor TO ck_user;
-\q
-3. 上传代码并安装依赖
-bash
+sudo -u postgres psql
 
-复制
+3. 上传代码并安装依赖
 # 在你的 Ubuntu 服务器上
 cd ~
 
@@ -55,10 +65,8 @@ cd ck-main
 pnpm install
 
 # ⚠️ 首次安装需要等待 pnpm 下载所有 catalog 包
-4. 配置环境变量
-bash
 
-复制
+4. 配置环境变量
 # 在 ck-main 根目录创建 .env 文件
 cat > .env << 'EOF'
 # PostgreSQL 连接字符串（替换为你的实际值）
@@ -70,25 +78,19 @@ PORT=5000
 # Node 环境
 NODE_ENV=production
 EOF
-5. 数据库初始化
-bash
 
-复制
+5. 数据库初始化
 # 推送 Schema 到数据库
 pnpm --filter @workspace/db run push
 
 # 种子数据会自动写入（首次运行）
 pnpm run dev
-6. 生产构建
-bash
 
-复制
+6. 生产构建
 # 类型检查 + 构建所有包
 pnpm run build
-7. 用 PM2 运行（推荐生产环境）
-bash
 
-复制
+7. 用 PM2 运行（推荐生产环境）
 # 安装 PM2
 npm install -g pm2
 
@@ -100,10 +102,8 @@ pm2 start dist/index.mjs --name ck-api
 # 或用 nginx 反向代理 static build
 cd ck-main/artifacts/ck-monitor
 pm2 start npx --name ck-frontend -- vite preview --host
-8. Nginx 反向代理（可选）
-nginx
 
-复制
+8. Nginx 反向代理（可选）
 server {
     listen 80;
     server_name your-domain.com;
@@ -122,9 +122,7 @@ server {
         proxy_http_version 1.1;
     }
 }
-9. 添加开机自启
-bash
 
-复制
+9. 添加开机自启
 pm2 save
 pm2 startup
