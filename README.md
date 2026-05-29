@@ -5,20 +5,19 @@
 <img width="772" height="734" alt="image" src="https://github.com/user-attachments/assets/f946e437-12a4-4028-9995-3920eaa0b715" />
 <img width="762" height="758" alt="image" src="https://github.com/user-attachments/assets/57af256d-2ea4-459c-b1c0-8249dbdb0405" />
 
-项目概览
+# 项目概览:
 
 ClickHouse Monitor — 一个 ClickHouse 数据库监控告警系统
 
-技术栈：
+# 技术栈：
 
-Monorepo：
-pnpm workspaces
-后端：
-Express 5 + PostgreSQL + Drizzle ORM + Zod 校验
-前端：
-React 19 + Vite + TailwindCSS v4 + Recharts + Radix UI
-运行时：
-Node.js 24
+Monorepo：pnpm workspaces
+
+后端：Express 5 + PostgreSQL + Drizzle ORM + Zod 校验
+
+前端：React 19 + Vite + TailwindCSS v4 + Recharts + Radix UI
+
+运行时：Node.js 24
 
 # Ubuntu 部署步骤
 # 1. 环境准备
@@ -83,39 +82,57 @@ pnpm install
 
 # 4. 配置环境变量
 #在 ck-main 根目录创建 .env 文件
+
 cat > .env << 'EOF'
+
 #PostgreSQL 连接字符串（替换为你的实际值）
+
 DATABASE_URL=postgresql://ck_user:your_password@localhost:5432/ck_monitor
 
 #API 服务端口（可选，默认 5000）
+
 PORT=5000
 
 #Node 环境
+
 NODE_ENV=production
+
 EOF
 
 # 5. 数据库初始化
+
 #推送 Schema 到数据库
+
 pnpm --filter @workspace/db run push
 
 #种子数据会自动写入（首次运行）
+
 pnpm run dev
 
 # 6. 生产构建
+
 #类型检查 + 构建所有包
+
 pnpm run build
 
 # 7. 用 PM2 运行（推荐生产环境）
+
 #安装 PM2
+
 npm install -g pm2
 
 #启动 API 服务
+
 cd ck-main/artifacts/api-server
+
 pm2 start dist/index.mjs --name ck-api
 
 #启动前端预览（可选，前端开发模式）
+
 #或用 nginx 反向代理 static build
+
 cd ck-main/artifacts/ck-monitor
+
 pm2 start npx --name ck-frontend -- vite preview --host
 
 # 8. Nginx 反向代理（可选）
